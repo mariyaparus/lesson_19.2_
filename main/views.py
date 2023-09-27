@@ -1,8 +1,10 @@
+from django.forms import inlineformset_factory
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
-from main.models import Student
+from main.forms import StudentForm, SubjectForm
+from main.models import Student, Subject
 
 
 # Create your views here.
@@ -57,7 +59,8 @@ class StudentDetailView(DetailView):
 
 class StudentCreateView(CreateView):
     model = Student
-    fields = ('first_name', 'last_name', 'avatar',)
+    form_class = StudentForm
+    # fields = ('first_name', 'last_name', 'avatar',)
     success_url = reverse_lazy('main:index')
 
     def get_context_data(self, **kwargs):
@@ -68,13 +71,28 @@ class StudentCreateView(CreateView):
 
 class StudentUpdateView(UpdateView):
     model = Student
-    fields = ('first_name', 'last_name', 'avatar',)
+    form_class = StudentForm
+    # fields = ('first_name', 'last_name', 'avatar',)
     success_url = reverse_lazy('main:index')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({'title': 'Редактирование студента'})
+        SubjectFormSet = inlineformset_factory(Student, Subject, form=SubjectForm, extra=1)
+        if self.request.method == 'POST':
+            context['formset'] = SubjectFormSet(self.request.POST, instance=self.object)
+        else:
+            context['formset'] = SubjectFormSet(instance=self.object)
+        # context.update({'title': 'Редактирование студента'})
         return context
+
+    def form_valid(self, form):
+        formset = self.get_context_data()['formset']
+        self.object = form.save
+        if formset.is_valid():
+            formset.instance = self.object
+            formset.save()
+
+        return super().form_valid(form)
 
 
 class StudentDeleteView(DeleteView):
@@ -99,6 +117,6 @@ def toggle_activity(request, pk):
     context = {
         'object': student_item,
         'title': 'Активен?',
-        }
+    }
 
     return redirect(reverse('main:index'), context)
