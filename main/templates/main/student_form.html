@@ -2,24 +2,48 @@
 
 {% block content %}
 <div class="col-12">
-    <div class="row">
+    <form class='row' method="post" enctype="multipart/form-data">
         <div class="col-6">
             <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        {% if object %}
+                        Редактирование студента
+                        {% else %}
+                        Добавление студента
+                        {% endif %}
+                    </h2>
+                </div>
                 <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                        <button type="submit" class="btn btn-primary">
-                            {% if object %}
-                            Сохранить
-                            {% else %}
-                            Создать
-                            {% endif %}
-                        </button>
-                    </form>
+
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-success">
+                        {% if object %}
+                        Сохранить
+                        {% else %}
+                        Создать
+                        {% endif %}
+                    </button>
+
                 </div>
             </div>
         </div>
-    </div>
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        Предметы студента
+                    </h2>
+                </div>
+                <div class="card-body">
+                    {{ formset.management_form }}
+                    {% for form in formset.forms %}
+                    {{ form.as_p }}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </form>
 </div>
 {% endblock %}
