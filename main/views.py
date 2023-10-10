@@ -75,15 +75,27 @@ class StudentUpdateView(UpdateView):
     # fields = ('first_name', 'last_name', 'avatar',)
     success_url = reverse_lazy('main:index')
 
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     SubjectFormSet = inlineformset_factory(Student, Subject, form=SubjectForm, extra=1)
+    #     if self.request.method == 'POST':
+    #         context['formset'] = SubjectFormSet(self.request.POST, instance=self.object)
+    #     else:
+    #         context['formset'] = SubjectFormSet(instance=self.object)
+    #     context.update({'title': 'Редактирование студента'})
+    #     return context
+
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        SubjectFormSet = inlineformset_factory(Student, Subject, form=SubjectForm, extra=1)
+        context_data = super().get_context_data(**kwargs)
+        SubjectFormset = inlineformset_factory(Student, Subject, form=SubjectForm, extra=1)
         if self.request.method == 'POST':
-            context['formset'] = SubjectFormSet(self.request.POST, instance=self.object)
+            formset = SubjectFormset(self.request.POST)
         else:
-            context['formset'] = SubjectFormSet(instance=self.object)
-        # context.update({'title': 'Редактирование студента'})
-        return context
+            formset = SubjectFormset(instance=self.object)
+
+        context_data['formset'] = formset
+
+        return context_data
 
     def form_valid(self, form):
         formset = self.get_context_data()['formset']
